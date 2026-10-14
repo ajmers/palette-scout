@@ -25,3 +25,6 @@ dist-ssr
 
 # scraper cache (HTTP responses, PDFs, crops)
 .cache
+
+# Vercel CLI project link
+.vercel

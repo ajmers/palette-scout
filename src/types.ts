@@ -31,7 +31,10 @@ export interface Paint {
   granulation: boolean | null;
   granulationRaw: string | null;
   staining: string | null;
+  /** The manufacturer's own lightfastness wording. */
   lightfastness: string | null;
+  /** Normalised to the ASTM D4303 scale: 1 = I (excellent) … 4 = IV-V (poor/fugitive); null = not rated. */
+  lightfast: 1 | 2 | 3 | 4 | null;
   series: string | null;
   hex: string | null;
   /** "official" = published by the brand, "swatch" = measured from the swatch image. */

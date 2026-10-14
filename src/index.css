@@ -392,6 +392,26 @@ main {
   font-size: 9px;
   font-weight: 700;
 }
+.badge.lf {
+  min-width: 15px;
+  height: 15px;
+  padding: 0 3px;
+  border: 1px solid currentColor;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+}
+.badge.lf-3,
+.badge.lf-4 {
+  border-color: #c2410c;
+  color: #c2410c;
+}
+.hint {
+  margin: 6px 0 0;
+  font-size: 0.8em;
+  color: var(--muted);
+}
 .card-pigments {
   overflow: hidden;
   white-space: nowrap;

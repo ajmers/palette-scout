@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { TRANSPARENCY_LABEL } from '../filters';
+import { ROMAN, TRANSPARENCY_LABEL, lightfastLabel } from '../filters';
 import type { Paint } from '../types';
 import { OpacityIcon } from './OpacityIcon';
 
@@ -19,6 +19,11 @@ export const PaintCard = memo(function PaintCard({ paint: p, onOpen }: { paint: 
           {p.transparency && (
             <span className="badge" title={TRANSPARENCY_LABEL[p.transparency]}>
               <OpacityIcon value={p.transparency} />
+            </span>
+          )}
+          {p.lightfast && (
+            <span className={`badge lf lf-${p.lightfast}`} title={`Lightfastness ${lightfastLabel(p.lightfast)}`}>
+              {ROMAN[p.lightfast]}
             </span>
           )}
           {p.granulation && (

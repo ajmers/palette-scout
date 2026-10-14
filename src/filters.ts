@@ -3,7 +3,8 @@ import type { HueFamily, Paint, Transparency } from './types';
 export type GranulationFilter = 'yes' | 'no' | 'unknown';
 export type TransparencyFilter = Transparency | 'unknown';
 export type PigmentMode = 'any' | 'all' | 'only';
-export type SortKey = 'hue' | 'name' | 'brand' | 'lightness';
+export type LightfastFilter = '1' | '2' | '3' | '4' | 'unknown';
+export type SortKey = 'hue' | 'name' | 'brand' | 'lightness' | 'lightfast';
 
 export interface Filters {
   q: string;
@@ -12,6 +13,7 @@ export interface Filters {
   hues: HueFamily[];
   transparency: TransparencyFilter[];
   granulation: GranulationFilter[];
+  lightfast: LightfastFilter[];
   pigments: string[];
   pigmentMode: PigmentMode;
   singlePigment: boolean;
@@ -25,6 +27,7 @@ export const EMPTY: Filters = {
   hues: [],
   transparency: [],
   granulation: [],
+  lightfast: [],
   pigments: [],
   pigmentMode: 'any',
   singlePigment: false,
@@ -80,11 +83,23 @@ export const GRANULATION_LABEL: Record<GranulationFilter, string> = {
   unknown: 'Not published',
 };
 
+export const LIGHTFAST: LightfastFilter[] = ['1', '2', '3', '4', 'unknown'];
+export const LIGHTFAST_LABEL: Record<LightfastFilter, string> = {
+  1: 'I · Excellent',
+  2: 'II · Very good',
+  3: 'III · Fair',
+  4: 'IV · Poor / fugitive',
+  unknown: 'Not rated',
+};
+export const ROMAN = { 1: 'I', 2: 'II', 3: 'III', 4: 'IV' } as const;
+export const lightfastLabel = (n: 1 | 2 | 3 | 4) => LIGHTFAST_LABEL[String(n) as LightfastFilter];
+
 export const lineKey = (p: Paint) => `${p.brand} — ${p.line}`;
 const granKey = (p: Paint): GranulationFilter => (p.granulation == null ? 'unknown' : p.granulation ? 'yes' : 'no');
 const transKey = (p: Paint): TransparencyFilter => p.transparency ?? 'unknown';
+const lfKey = (p: Paint): LightfastFilter => (p.lightfast == null ? 'unknown' : (String(p.lightfast) as LightfastFilter));
 
-type Group = 'lines' | 'hues' | 'transparency' | 'granulation' | 'pigments';
+type Group = 'lines' | 'hues' | 'transparency' | 'granulation' | 'lightfast' | 'pigments';
 
 function normalise(s: string) {
   return s.normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase();
@@ -102,6 +117,7 @@ export function matches(p: Paint, f: Filters, skip?: Group): boolean {
   if (skip !== 'hues' && f.hues.length && !(p.hue && f.hues.includes(p.hue))) return false;
   if (skip !== 'transparency' && f.transparency.length && !f.transparency.includes(transKey(p))) return false;
   if (skip !== 'granulation' && f.granulation.length && !f.granulation.includes(granKey(p))) return false;
+  if (skip !== 'lightfast' && f.lightfast.length && !f.lightfast.includes(lfKey(p))) return false;
   if (skip !== 'pigments' && f.pigments.length) {
     const has = (c: string) => p.pigments.includes(c);
     if (f.pigmentMode === 'any' && !f.pigments.some(has)) return false;
@@ -116,18 +132,20 @@ export interface Facets {
   hues: Map<HueFamily, number>;
   transparency: Map<TransparencyFilter, number>;
   granulation: Map<GranulationFilter, number>;
+  lightfast: Map<LightfastFilter, number>;
   pigments: Map<string, number>;
 }
 
 /** Counts per option, each computed with all *other* filter groups applied. */
 export function facets(paints: Paint[], f: Filters): Facets {
-  const out: Facets = { lines: new Map(), hues: new Map(), transparency: new Map(), granulation: new Map(), pigments: new Map() };
+  const out: Facets = { lines: new Map(), hues: new Map(), transparency: new Map(), granulation: new Map(), lightfast: new Map(), pigments: new Map() };
   const inc = <K>(m: Map<K, number>, k: K) => m.set(k, (m.get(k) ?? 0) + 1);
   for (const p of paints) {
     if (matches(p, f, 'lines')) inc(out.lines, lineKey(p));
     if (p.hue && matches(p, f, 'hues')) inc(out.hues, p.hue);
     if (matches(p, f, 'transparency')) inc(out.transparency, transKey(p));
     if (matches(p, f, 'granulation')) inc(out.granulation, granKey(p));
+    if (matches(p, f, 'lightfast')) inc(out.lightfast, lfKey(p));
     if (matches(p, f, 'pigments')) for (const c of p.pigments) inc(out.pigments, c);
   }
   return out;
@@ -142,6 +160,9 @@ export function sortPaints(list: Paint[], key: SortKey): Paint[] {
       return sorted.sort(byName);
     case 'brand':
       return sorted.sort((a, b) => a.brand.localeCompare(b.brand) || a.line.localeCompare(b.line) || byName(a, b));
+    case 'lightfast':
+      // Most lightfast first; unrated paints last.
+      return sorted.sort((a, b) => (a.lightfast ?? 9) - (b.lightfast ?? 9) || byName(a, b));
     case 'lightness':
       return sorted.sort((a, b) => (b.lightness ?? 0) - (a.lightness ?? 0) || byName(a, b));
     case 'hue':
@@ -157,7 +178,7 @@ export function sortPaints(list: Paint[], key: SortKey): Paint[] {
 
 // --- URL <-> filters ----------------------------------------------------------------------------
 
-const LIST_KEYS = { lines: 'line', hues: 'hue', transparency: 't', granulation: 'g', pigments: 'pig' } as const;
+const LIST_KEYS = { lines: 'line', hues: 'hue', transparency: 't', granulation: 'g', lightfast: 'lf', pigments: 'pig' } as const;
 
 export function toSearch(f: Filters): string {
   const sp = new URLSearchParams();
@@ -183,13 +204,14 @@ export function fromSearch(search: string): Filters {
     hues: list(LIST_KEYS.hues) as HueFamily[],
     transparency: list(LIST_KEYS.transparency) as TransparencyFilter[],
     granulation: list(LIST_KEYS.granulation) as GranulationFilter[],
+    lightfast: list(LIST_KEYS.lightfast) as LightfastFilter[],
     pigments: list(LIST_KEYS.pigments),
     pigmentMode: (['any', 'all', 'only'].includes(sp.get('pm') ?? '') ? sp.get('pm') : 'any') as PigmentMode,
     singlePigment: sp.get('single') === '1',
     hideShimmer: sp.get('noshimmer') === '1',
-    sort: (['hue', 'name', 'brand', 'lightness'].includes(sp.get('sort') ?? '') ? sp.get('sort') : 'hue') as SortKey,
+    sort: (['hue', 'name', 'brand', 'lightness', 'lightfast'].includes(sp.get('sort') ?? '') ? sp.get('sort') : 'hue') as SortKey,
   };
 }
 
 export const activeCount = (f: Filters) =>
-  (f.q ? 1 : 0) + f.lines.length + f.hues.length + f.transparency.length + f.granulation.length + f.pigments.length + (f.singlePigment ? 1 : 0) + (f.hideShimmer ? 1 : 0);
+  (f.q ? 1 : 0) + f.lines.length + f.hues.length + f.transparency.length + f.granulation.length + f.lightfast.length + f.pigments.length + (f.singlePigment ? 1 : 0) + (f.hideShimmer ? 1 : 0);

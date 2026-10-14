@@ -11,6 +11,20 @@ export const RAW = path.join(ROOT, 'scripts', 'raw');
 const UA =
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36';
 
+/** Scraper modules in scripts/brands/, in the order they run. */
+export const BRANDS = [
+  'winsor-newton',
+  'daniel-smith',
+  'm-graham',
+  'maimeri',
+  'holbein',
+  'schmincke',
+  'qor',
+  'royal-talens',
+  'sennelier',
+  'rosa',
+];
+
 export const exists = (p) => access(p).then(() => true, () => false);
 
 /** Fetch a URL with an on-disk cache so re-runs don't hammer the brand sites. */

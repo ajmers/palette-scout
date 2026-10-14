@@ -3,8 +3,7 @@
 import { mkdir, readFile, readdir, writeFile, rm } from 'node:fs/promises';
 import path from 'node:path';
 import sharp from 'sharp';
-import { CACHE, ROOT, fetchCached, pool, slug, exists } from './lib.mjs';
-import { BRANDS } from './scrape.mjs';
+import { BRANDS, CACHE, ROOT, fetchCached, pool, slug, exists } from './lib.mjs';
 
 const OUT_DATA = path.join(ROOT, 'public', 'data', 'paints.json');
 const OUT_SWATCH = path.join(ROOT, 'public', 'swatches');
@@ -73,6 +72,40 @@ async function swatchColour(buf) {
   const pick = pool_.slice(Math.floor(pool_.length * 0.2), Math.max(Math.floor(pool_.length * 0.55), 1));
   const avg = [0, 1, 2].map((c) => fromLin(pick.reduce((s, p) => s + toLin(p[c]), 0) / pick.length));
   return avg;
+}
+
+// --- lightfastness ---------------------------------------------------------------------------
+
+/**
+ * Map each brand's lightfastness wording onto the ASTM D4303 scale: 1 = I (excellent),
+ * 2 = II (very good), 3 = III (fair), 4 = IV-V (poor / fugitive). null = not rated or not published.
+ * Winsor & Newton publish *permanence* (AA/A/B/C) rather than lightfastness; AA and A both count
+ * as excellent here.
+ */
+export function lightfastScore(brand, raw) {
+  if (raw == null) return null;
+  const s = String(raw).trim().toLowerCase();
+  if (!s || /not rated|n\.?r\.?$/.test(s)) return null;
+  // Explicit ASTM roman numerals ("I - Excellent", "LF II", "III").
+  const roman = s.match(/(?:^|lf\s*|\b)(iv|v|iii|ii|i)\b/);
+  if (roman && /^(i|ii|iii|iv|v)$|lf|astm|-/.test(s)) return { i: 1, ii: 2, iii: 3, iv: 4, v: 4 }[roman[1]];
+  // Symbol scales: Holbein/Rosa stars, Royal Talens plus signs (3 = best).
+  if (/^\*{1,3}$/.test(s)) return 4 - s.length;
+  if (/^\+{1,3}$/.test(s)) return 4 - s.length;
+  if (s === '0') return 4;
+  switch (brand) {
+    case 'Schmincke':
+      return { highest: 1, 'very good': 1, good: 2, moderate: 3, weak: 4 }[s] ?? null;
+    case 'Winsor & Newton':
+      return { 'extremely permanent': 1, permanent: 1, 'moderately durable': 3, fugitive: 4 }[s] ?? null;
+    case 'Maimeri':
+      return { highest: 1, normal: 2, low: 3 }[s] ?? null;
+  }
+  if (/excellent/.test(s)) return 1;
+  if (/very good/.test(s)) return 2;
+  if (/fair|acceptable|good/.test(s)) return 3;
+  if (/fugitive|poor/.test(s)) return 4;
+  return null;
 }
 
 // --- swatch images ----------------------------------------------------------------------------
@@ -154,6 +187,7 @@ const paints = await pool(all, 8, async (p) => {
     granulationRaw: p.granulationRaw ?? null,
     staining: p.staining ?? null,
     lightfastness: p.lightfastness ?? null,
+    lightfast: lightfastScore(p.brand, p.lightfastness),
     series: p.series ?? null,
     hex: rgb ? hex(rgb) : null,
     hexSource,

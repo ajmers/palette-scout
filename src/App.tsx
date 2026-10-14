@@ -109,6 +109,7 @@ export default function App() {
               <select value={filters.sort} onChange={(e) => update({ sort: e.target.value as SortKey })}>
                 <option value="hue">Colour</option>
                 <option value="lightness">Light → dark</option>
+                <option value="lightfast">Most lightfast</option>
                 <option value="name">Name</option>
                 <option value="brand">Brand</option>
               </select>

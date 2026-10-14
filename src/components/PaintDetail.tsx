@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { HUE_LABEL, TRANSPARENCY_LABEL } from '../filters';
+import { HUE_LABEL, TRANSPARENCY_LABEL, lightfastLabel } from '../filters';
 import { pigmentName } from '../pigments';
 import type { Paint } from '../types';
 import { OpacityIcon } from './OpacityIcon';
@@ -97,12 +97,12 @@ export function PaintDetail({ paint: p, onClose, onSamePigments, onPigment }: Pr
                 <dd>{p.staining}</dd>
               </>
             )}
-            {p.lightfastness && (
-              <>
-                <dt>Lightfastness</dt>
-                <dd>{p.lightfastness}</dd>
-              </>
-            )}
+            <dt>Lightfastness</dt>
+            <dd>
+              {p.lightfast ? lightfastLabel(p.lightfast) : 'Not rated'}
+              {p.lightfastness && <span className="muted small"> — label: “{p.lightfastness}”</span>}
+              {p.brand === 'Winsor & Newton' && p.lightfastness && <div className="muted small">W&amp;N publish permanence (AA/A/B/C) rather than a lightfastness test.</div>}
+            </dd>
             {p.series && (
               <>
                 <dt>Series / price group</dt>

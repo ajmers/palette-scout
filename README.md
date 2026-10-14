@@ -2,7 +2,7 @@
 
 A single-page React app for browsing watercolour paints from the major manufacturers, using the swatches
 and technical data each brand publishes on its own website. Paints can be filtered by **hue**,
-**transparency**, **granulation**, **pigment** (Colour Index codes, with "any / all / only these" matching
+**transparency**, **granulation**, **lightfastness**, **pigment** (Colour Index codes, with "any / all / only these" matching
 and a single-pigment toggle) and **brand / range**, plus free-text search. Every filtered view is
 reflected in the URL, so it can be bookmarked or shared. Clicking a paint shows all its properties, the
 manufacturer's original wording, a link to the official source, and a one-click "same pigment(s) in other
@@ -13,6 +13,19 @@ npm install
 npm run dev          # http://localhost:5173
 npm run build        # static site in dist/ (relative paths, deployable anywhere)
 ```
+
+### Deploying to Vercel
+
+`vercel.ts` configures a static Vite build (`dist/`) with cache headers for the build assets, swatches
+and data. From the project folder:
+
+```sh
+npx vercel          # preview deployment (links the project on first run)
+npx vercel --prod   # production
+```
+
+Or push the repo to GitHub and import it at vercel.com/new. The framework and build settings are
+picked up from `vercel.ts`.
 
 The repo ships with the generated data (`public/data/paints.json`) and swatch thumbnails
 (`public/swatches/`), so the app runs without re-scraping.
@@ -56,6 +69,11 @@ transcribed by hand into `scripts/raw/rosa_gallery_chart.json`. Swatches are cro
   - Holbein uses the `X` letter on its chart.
   - Royal Talens, Rosa and QoR use a `G` mark.
   - Sennelier publishes a separate list of its 36 granulating colours.
+- **Lightfastness**: each brand's rating mapped onto the ASTM D4303 scale: I excellent, II very good,
+  III fair, IV poor/fugitive. The mapping covers Daniel Smith/QoR words, M. Graham/Sennelier numerals,
+  Holbein/Rosa stars, Royal Talens +++ (100+ years), Schmincke's 5-step scale (highest and very good
+  both → I) and Maimeri's stars. Winsor & Newton publish *permanence* (AA/A/B/C) instead, so AA and A
+  both count as I. The original label is shown alongside. Sennelier's "not rated" colours stay unrated.
 - **Hue**: a family (yellow, orange, red, pink, magenta, violet, blue, turquoise, green, earth, grey,
   black, white). It comes from the brand's published hex code where one exists (Royal Talens), and
   otherwise is measured from the swatch: the stronger part of the wash, in OKLCH. Paints made only of

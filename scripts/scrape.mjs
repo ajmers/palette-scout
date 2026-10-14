@@ -2,20 +2,8 @@
 // Usage: node scripts/scrape.mjs [brand ...]   (no args = all brands)
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { CACHE } from './lib.mjs';
+import { BRANDS, CACHE } from './lib.mjs';
 
-export const BRANDS = [
-  'winsor-newton',
-  'daniel-smith',
-  'm-graham',
-  'maimeri',
-  'holbein',
-  'schmincke',
-  'qor',
-  'royal-talens',
-  'sennelier',
-  'rosa',
-];
 
 const wanted = process.argv.slice(2).length ? process.argv.slice(2) : BRANDS;
 await mkdir(path.join(CACHE, 'brands'), { recursive: true });

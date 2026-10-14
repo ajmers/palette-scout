@@ -5,6 +5,8 @@ import {
   HUES,
   HUE_CHIP,
   HUE_LABEL,
+  LIGHTFAST,
+  LIGHTFAST_LABEL,
   TRANSPARENCY,
   TRANSPARENCY_LABEL,
   type Facets,
@@ -92,6 +94,22 @@ export function FilterPanel({ paints, filters: f, facets, onChange }: Props) {
             </Chip>
           ))}
         </div>
+      </Section>
+
+      <Section title="Lightfastness">
+        <div className="chip-list">
+          {LIGHTFAST.map((l) => (
+            <Chip
+              key={l}
+              on={f.lightfast.includes(l)}
+              count={facets.lightfast.get(l) ?? 0}
+              onClick={() => onChange({ lightfast: toggle(f.lightfast, l) })}
+            >
+              {LIGHTFAST_LABEL[l]}
+            </Chip>
+          ))}
+        </div>
+        <p className="hint">Each brand’s rating mapped to the ASTM D4303 scale (I = best).</p>
       </Section>
 
       <PigmentSection filters={f} counts={facets.pigments} onChange={onChange} />
