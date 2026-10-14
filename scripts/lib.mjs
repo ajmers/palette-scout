@@ -23,6 +23,7 @@ export const BRANDS = [
   'royal-talens',
   'sennelier',
   'rosa',
+  'white-nights',
 ];
 
 export const exists = (p) => access(p).then(() => true, () => false);

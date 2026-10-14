@@ -32,7 +32,7 @@ The repo ships with the generated data (`public/data/paints.json`) and swatch th
 
 ## What's in it
 
-1,424 paints from 11 brands/ranges, captured October 2026:
+1,569 paints from 12 brands/ranges, captured October 2026:
 
 | Brand | Range(s) | Paints | Source on the official site |
 |---|---|---:|---|
@@ -47,11 +47,16 @@ The repo ships with the generated data (`public/data/paints.json`) and swatch th
 | Rembrandt | Artists' Watercolour | 120 | Product variants on royaltalens.com ¹ + colour chart PDF |
 | Sennelier | l'Aquarelle | 98 | Colour chart PDF + "granulating colours" list PDF |
 | Rosa | ROSA Gallery | 100 | Official colour chart PDF ² |
+| White Nights | Extra-Fine Artists' Watercolours | 145 | Colour chart images + catalogue PDF on nevskayapalitra.com ³ |
 
 ¹ These sites block scripted requests. Their data was captured once from a normal browser session and
 saved in `scripts/raw/` (see *Refreshing the data*).
 ² rosa.ua is behind a bot check, and its colour chart PDF has no text layer. The chart labels were
 transcribed by hand into `scripts/raw/rosa_gallery_chart.json`. Swatches are cropped from the PDF itself.
+³ White Nights' current charts (145 colours, including the granulating "mist"/"shadows" series) are
+images with no text layer. Their labels were transcribed by hand into `scripts/raw/white_nights_chart.json`
+and checked against the text of the 2023 catalogue PDF where colours overlap. The 18 pastel colours
+come from that PDF, since the image charts leave them out. Swatches are cropped from the charts.
 
 ### How each property is derived
 
@@ -61,17 +66,17 @@ transcribed by hand into `scripts/raw/rosa_gallery_chart.json`. Swatches are cro
   without CI codes (metallics, interference colours, Daniel Smith PrimaTek minerals) show the
   manufacturer's description instead.
 - **Transparency**: each brand's scale mapped onto transparent / semi-transparent / semi-opaque /
-  opaque. The original label is kept and shown in the detail view. For Sennelier and Rosa, the
-  chart's opacity square is read from its pixels or from the chart symbol.
+  opaque. The original label is kept and shown in the detail view. For Sennelier, Rosa and White
+  Nights, the chart's opacity square is read from its pixels or from the chart symbol.
 - **Granulation**: granulating / non-granulating / *not published*. Brand specifics:
   - W&N and M. Graham use one combined "granulation/staining" field. A colour not marked
     granulating there counts as non-granulating.
   - Holbein uses the `X` letter on its chart.
-  - Royal Talens, Rosa and QoR use a `G` mark.
+  - Royal Talens, Rosa, White Nights and QoR use a `G` mark.
   - Sennelier publishes a separate list of its 36 granulating colours.
 - **Lightfastness**: each brand's rating mapped onto the ASTM D4303 scale: I excellent, II very good,
   III fair, IV poor/fugitive. The mapping covers Daniel Smith/QoR words, M. Graham/Sennelier numerals,
-  Holbein/Rosa stars, Royal Talens +++ (100+ years), Schmincke's 5-step scale (highest and very good
+  Holbein/Rosa/White Nights stars, Royal Talens +++ (100+ years), Schmincke's 5-step scale (highest and very good
   both → I) and Maimeri's stars. Winsor & Newton publish *permanence* (AA/A/B/C) instead, so AA and A
   both count as I. The original label is shown alongside. Sennelier's "not rated" colours stay unrated.
 - **Hue**: a family (yellow, orange, red, pink, magenta, violet, blue, turquoise, green, earth, grey,
@@ -89,7 +94,10 @@ transcribed by hand into `scripts/raw/rosa_gallery_chart.json`. Swatches are cro
 - Daniel Smith Interference Blue has no image in the official swatch gallery. Pyrrole Rubin (Holbein)
   has no opacity letter on the chart, and 8 W&N "Cadmium-Free" colours have
   no pigment code on their product pages.
-- **Brands not included:** Da Vinci (site blocks automated access), White Nights / Nevskaya Palitra,
+- White Nights Indanthrene Blue Light (537) is on the 2023 catalogue but not the current charts, so it's
+  left out. The 2023 PDF also has a hidden `G` behind Zinc White that isn't printed; the current chart
+  (no G) is used.
+- **Brands not included:** Da Vinci (site blocks automated access),
   Mijello Mission Gold, Lukas, Old Holland, Art Spectrum. Each would need a new scraper in
   `scripts/brands/`.
 
@@ -120,6 +128,8 @@ clients. To refresh them, open the page in a normal browser session and export f
 - `rt_variants.json`: for each Van Gogh / Rembrandt tube and pan product on royaltalens.com, the
   `#variant-specs-<variantId>` block of each variant (opacity, pigments, colour number, hex).
 - `rosa_gallery_chart.json`: transcribed from the ROSA Gallery colour chart PDF.
+- `white_nights_chart.json`: transcribed from the White Nights chart images on nevskayapalitra.com/colors/
+  (opacity and staining symbols read from their pixels), plus the pastel page of the catalogue PDF.
 
 ## Project layout
 
