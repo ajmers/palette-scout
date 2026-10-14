@@ -59,7 +59,7 @@ export default function App() {
     <div className="app">
       <header className="topbar">
         <h1>
-          Watercolour <span>swatch finder</span>
+          Palette <span>Scout</span>
         </h1>
         <input
           className="search"

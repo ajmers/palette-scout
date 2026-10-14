@@ -1,4 +1,4 @@
-# Watercolour swatch finder
+# Palette Scout
 
 A single-page React app for browsing watercolour paints from the major manufacturers, using the swatches
 and technical data each brand publishes on its own website. Paints can be filtered by **hue**,
